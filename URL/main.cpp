@@ -22,13 +22,13 @@ void a()
 {
 	ifstream plikWejœciowy;
 	string liczba;
-	cout << "podaj rz¹d równania" << endl;
+	cout << "podaj rzad rownania" << endl;
 	cin >> n;
-	cout << "podaj max iloœæ iteracji" << endl;
+	cout << "podaj max ilosc iteracji" << endl;
 	cin >> max_liczba_iteracji;
 	cout << "podaj epsilon" << endl;
 	cin >> epsilon;
-	plikWejœciowy.open("Plik wejœciowy.txt");
+	plikWejœciowy.open("Plik wejsciowy.txt");
 	A = new double*[n];			//two¿ymy miejsce na macierz A
 	for (int i = 0; i < n; i++)
 	{
@@ -83,9 +83,22 @@ void c()
 {
 	double norma[3];
 	unsigned long it = 0;
-
+	double suma = 0;
 	memcpy(X, beta, (sizeof(double)*n));
-
+	for (int j = 0; j < n; j++)
+	{
+		norma[0] += abs(A[n - 1][j]);	//norma 1
+		norma[1] += abs(A[j][n - 1]);	//norma 2
+	}
+	
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < n; j++)
+		{
+			norma[2] += pow(A[i][j], 2);
+		}
+	}
+	norma[2] = sqrt(norma[2]);		//norma 3
 	do {
 		memcpy(oX, X, (sizeof(double)*n));
 		it++;
@@ -105,6 +118,12 @@ void d()
 int main()
 {
 	a();
+	for (int i = 0; i < n; i++)	//zwolnienie pamieci
+	{
+		delete[] A[i];
+	}
+	delete[] A;
+	delete[] B;
 	cin.ignore();
 	getchar();
 	return 0;
