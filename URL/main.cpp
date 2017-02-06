@@ -53,16 +53,6 @@ void a()
 
 int b()
 {
-	// Przekszta³canie A i B
-	for (int i = 0; i < n; i++)
-	{
-		for (int j = 0; j < n; j++)
-		{
-
-		}
-	}
-
-	// Wyznaczanie alfy i bety
 	alfa = new double*[n];
 	for( int i = 0; i < n; i++ )
 		alfa[i] = new double[n];
@@ -79,14 +69,21 @@ int b()
 			}
 			else if (A[i][i] != 0)
 			{
-				alfa[i][j] = -(A[i][j] / A[i][i]);
+				alfa[i][j] = -(A[i][j] / A[i][i]);		//obliczanie alfy
 			}
 			else
 			{
 				return 1;
 			}
 		}
-		beta[i] = (double)(B[i] / A[i][i]);
+		if (A[i][i] != 0)
+		{
+			beta[i] = (double)(B[i] / A[i][i]);		//obliczanie bety
+		}
+		else
+		{
+			return 1;
+		}
 	}
 	return 0;
 }
@@ -95,6 +92,8 @@ void c()
 {
 	unsigned long it = 0;
 	double suma = 0;
+	double stopObliczen = 0;
+	double warunkiZbieznosci[3];
 	oX = new double[n];	//poprzednia iteracja
 	X = new double[n];
 	for (int i = 0; i < n; i++)
@@ -103,6 +102,7 @@ void c()
 	}
 	
 	do {
+
 		for (int i = 0; i < n; i++)
 		{
 			oX[i] = X[i];		//kopiowanie poprzedniego wektora
@@ -113,40 +113,70 @@ void c()
 			{
 				if (j != i)
 				{
-					suma =+ alfa[i][j] * oX[j] + beta[i];	//obliczanie nowego X
+					suma =+ alfa[i][j] * oX[j] ;	//obliczanie nowego X
 				}
 			}
-			X[i] = suma;		//zapisuje sume do aktualnego wektora
+			X[i] = suma + beta[i];		//zapisuje sume do aktualnego wektora
 			suma = 0;
 		}
 
 		it++;
-
-		normy[0] = abs(X[n-1]);		//norma 1
-		suma = 0;
-		for (int i = 0; i < n; i++)
+		for (int i = 0; i < n; i++)	//stop pobliczen iteracyjnych sposobem 2
 		{
-			suma += abs(X[i]);
+			stopObliczen += abs(X[i] - oX[i]);
 		}
-		normy[1] = suma;		//norma 2
-		suma = 0;
-		for (int i = 0; i < n; i++)
-		{
-			suma += pow(X[i], 2);	
-		}
-		normy[2] = sqrt(suma);		//norma 3
-	} while ((normy[0] <= epsilon) || (normy[1] <= epsilon) || (normy[2] <= epsilon) || (it >= max_liczba_iteracji));
-	//cout << "iteracja "<<it << endl;
+		stopObliczen = stopObliczen / n;
+		//normy[0] = abs(X[n-1]);		//norma 1
+		//suma = 0;
+		//for (int i = 0; i < n; i++)
+		//{
+		//	suma += abs(X[i]);
+		//}
+		//normy[1] = suma;		//norma 2
+		//suma = 0;
+		//for (int i = 0; i < n; i++)
+		//{
+		//	suma += pow(X[i], 2);	
+		//}
+		//normy[2] = sqrt(suma);		//norma 3
+		//suma = 0;
+		//cout << normy[0] << " " << normy[1] << " " << normy[2] << endl;
+	} while ((stopObliczen>=epsilon) && (it <= max_liczba_iteracji));
 	iteracja = it;
-	//for (int i = 0; i < n; i++)
-	//{
-	//	cout<<X[i]<<endl;
-	//}
+	suma = 0;
+	//obliczanie warunkow zbieznosci
+	for (int i = 0; i < n; i++)
+	{
+		suma += abs(alfa[n - 1][i]);		//1 warunek zbieznosci
+	}
+	warunkiZbieznosci[0] = suma;
+	suma = 0;
+	for (int i = 0; i < n; i++)
+	{
+		suma += abs(alfa[i][n-1]);		//2 warunek zbieznosci
+	}
+	warunkiZbieznosci[1] = suma;
+	suma = 0;
+	for (int i = 0; i < n; i++)
+	{
+		for (int j = 0; j < n; j++)
+		{
+			suma += pow(alfa[i][j],2);		//3 warunek zbieznosci
+		}
+	}
+	warunkiZbieznosci[2] = sqrt(suma);
+	if ((warunkiZbieznosci[0] < 1) && (warunkiZbieznosci[1] < 1) && (warunkiZbieznosci[2] < 1))
+	{
+		cout << "proces zbiezny";
+	}
 }
 
 void d()
 {
 	ofstream plik;
+	
+	double bladBezwzgledny = 0;
+	double rozwiazanieDokladne[] = { 1, 1, 0, -1, - 1 };
 	plik.open("raport.txt");
 	plik << "Macierz A" <<endl;
 	for (int i = 0; i < n; i++)
@@ -192,14 +222,20 @@ void d()
 		plik << setw(8) << X[i] << " ";
 	}
 	plik << endl;
-	plik << "ilosc iteracji " << iteracja;
+	plik << "ilosc iteracji " << iteracja << endl;
+	for (int i = 0; i < n;i++)
+	{
+		bladBezwzgledny += abs(X[i] - rozwiazanieDokladne[i]);
+	}
+	plik << "blad bezwzgledny " << bladBezwzgledny;
 
 }
 
 int main()
 {
+	ofstream plik;
 	a();
-	if (b() == 0)
+	if (b() == 0)		//jeœli nie bêdzie dzielenia przez zero
 	{
 		c();
 		d();
@@ -207,6 +243,9 @@ int main()
 	else
 	{
 		cout << "dzielenie przez 0";
+		plik.open("raport.txt");
+		plik << "blad" << endl<<"dzielenie przez 0";
+
 	}
 	for (int i = 0; i < n; i++)	//zwolnienie pamieci
 	{
