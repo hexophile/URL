@@ -67,7 +67,7 @@ int b()
 			{
 				alfa[i][j] = 0;
 			}
-			else if (A[i][i] != 0)
+			else if (A[i][i] != 0)		//sprawdzanie dzielenia przez 0
 			{
 				alfa[i][j] = -(A[i][j] / A[i][i]);		//obliczanie alfy
 			}
@@ -76,7 +76,7 @@ int b()
 				return 1;
 			}
 		}
-		if (A[i][i] != 0)
+		if (A[i][i] != 0)		//sprawdzanie dzielenia przez 0
 		{
 			beta[i] = (double)(B[i] / A[i][i]);		//obliczanie bety
 		}
@@ -121,26 +121,13 @@ void c()
 		}
 
 		it++;
+		stopObliczen = 0;
 		for (int i = 0; i < n; i++)	//stop pobliczen iteracyjnych sposobem 2
 		{
 			stopObliczen += abs(X[i] - oX[i]);
 		}
 		stopObliczen = stopObliczen / n;
-		//normy[0] = abs(X[n-1]);		//norma 1
-		//suma = 0;
-		//for (int i = 0; i < n; i++)
-		//{
-		//	suma += abs(X[i]);
-		//}
-		//normy[1] = suma;		//norma 2
-		//suma = 0;
-		//for (int i = 0; i < n; i++)
-		//{
-		//	suma += pow(X[i], 2);	
-		//}
-		//normy[2] = sqrt(suma);		//norma 3
-		//suma = 0;
-		//cout << normy[0] << " " << normy[1] << " " << normy[2] << endl;
+		stopObliczen = sqrt(stopObliczen);
 	} while ((stopObliczen>=epsilon) && (it <= max_liczba_iteracji));
 	iteracja = it;
 	suma = 0;
@@ -165,9 +152,14 @@ void c()
 		}
 	}
 	warunkiZbieznosci[2] = sqrt(suma);
+	cout << warunkiZbieznosci[0] << " " << warunkiZbieznosci[1] << " " << warunkiZbieznosci[2] << endl;
 	if ((warunkiZbieznosci[0] < 1) && (warunkiZbieznosci[1] < 1) && (warunkiZbieznosci[2] < 1))
 	{
 		cout << "proces zbiezny";
+	}
+	else
+	{
+		cout << "proces nie zbiezny";
 	}
 }
 
@@ -175,7 +167,7 @@ void d()
 {
 	ofstream plik;
 	
-	double bladBezwzgledny = 0;
+	double *bladBezwzgledny;
 	double rozwiazanieDokladne[] = { 1, 1, 0, -1, - 1 };
 	plik.open("raport.txt");
 	plik << "Macierz A" <<endl;
@@ -223,12 +215,17 @@ void d()
 	}
 	plik << endl;
 	plik << "ilosc iteracji " << iteracja << endl;
+	bladBezwzgledny = new double[n];
 	for (int i = 0; i < n;i++)
 	{
-		bladBezwzgledny += abs(X[i] - rozwiazanieDokladne[i]);
+		bladBezwzgledny[i] = abs(rozwiazanieDokladne[i] - X[i]);
 	}
-	plik << "blad bezwzgledny " << bladBezwzgledny;
-
+	plik << "blad bezwzgledny ";		//obliczenie bledu bezwzglednego
+	for (int i = 0; i < n; i++)
+	{
+		plik << bladBezwzgledny[i]<<" ";
+	}
+	delete[] bladBezwzgledny;
 }
 
 int main()
